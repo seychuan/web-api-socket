@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using POSService.Interfaces;
 using POSService.Models;
-using System.Threading.Tasks;
+using POSService.Services;
 
 namespace POSService.Controllers
 {
@@ -14,31 +14,32 @@ namespace POSService.Controllers
         public HkEdcController(IEDCService edcService) => _edcService = edcService;
 
         [HttpPost("purchase")]
-        public async Task<ActionResult<PurchaseResponseModel>> Purchase ([FromBody] PurchaseRequestModel request)
+        public ActionResult<PurchaseResponseModel> Purchase ([FromBody] PurchaseRequestModel request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = _edcService.ProcessTransaction("Testing");
+            // TODO
+            // Sample data
+            var eftRequest = new EFTRequest()
+            {
+                RequestType = "0003",
+                TransactionType = "Purchase",
+                MerchantRef = "ABC12345",
+                BaseCurrency = "SGD",
+                BaseAmount = 10000,
+                BaseAmountMinorUnit = 2,
+                CashierID = "1",
+                CartType = "1",
+            };
 
-            //var waitTime = await new EdcConnection().Process();
+            var eftResponse = _edcService.ProcessTransaction<EFTRequest, EFTResponse>(eftRequest);
+
             var response = new PurchaseResponseModel()
             {
                 ResponseText = "Response from EDC services",
-                RNN = result, //"1234567890",
+                RNN = "1234567890",
                 Status = 1
             };
-
-
-
-            //var response = await Task.Factory.StartNew(() => {
-
-            //    return new PurchaseResponseModel()
-            //    {
-            //        ResponseText = "Response from EDC services",
-            //        RNN = "1234567890",
-            //        Status = 1
-            //    };
-            //});
 
             return response;
         }
